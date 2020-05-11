@@ -4,35 +4,18 @@
 #include <string>
 #include <sstream>
 #include <list>
+#include <cmath>
 
 using namespace std;
 
 class coordinates {
 public:
-    coordinates(float x, float y, float z) {
-        this->x = x;
-        this->y = y;
-        this->z = z;
-    }
 
-    float getX() { return x;}
+    coordinates(float x, float y, float z) : x(x), y(y), z(z) {}
 
-    float getY() { return y;}
+    float getX() { return x; }
 
-    float getZ() { return z;}
-
-    void setX(float _x) {
-        x = _x;
-    }
-
-    void setY(float _y) {
-        y = _y;
-    }
-
-    void setZ(float _z) {
-        z = _z;
-    }
-
+    float getY() { return y; }
 
 private:
     float x;
@@ -41,28 +24,38 @@ private:
 };
 
 class Node {
+    int neighbour;
+    float distance;
 public:
-    Node(int _parent, int _neighbour) {
-        this->parent = _parent;
-        this->neighbour = _neighbour;
-    }
-    int getParent() { return parent; }
+    Node(int _neighbour, float _distance) : neighbour(_neighbour), distance(_distance) {}
+
     int getNeighbour() { return neighbour; }
 
+    int getDistance(vector<coordinates*> vec, int parent, int neighbour) {
+        float x1 = vec[parent - 1]->getX();
+        float y1 = vec[parent - 1]->getY();
+        float x2 = vec[neighbour - 1]->getX();
+        float y2 = vec[neighbour - 1]->getY();
+        distance = sqrt(pow(x2 - x1, 2) +
+                        pow(y2 - y1, 2) * 1.0);
+
+        return distance;
+    }
+
+    void setDistance(float _distance) { distance = _distance; }
 
 private:
-    int parent;
-    int neighbour;
-
 
 };
 
 
 int main() {
+    int n;
+    int m;
     string xyzPath;
     string graphPath;
-    vector<coordinates> coordinatesList;
-    typedef list<Node> neighbours;
+    vector<coordinates*> coordinatesList;
+    typedef list<Node*> neighbours;
     vector<neighbours> collection;
 
     string file;
@@ -70,69 +63,84 @@ int main() {
     string xyz = ".osm.xyz";
     cin >> file;
     string temp = file;
-    if(file.rfind(".osm.graph") != true) {
+    if (file.rfind(".osm.graph") != true) {
         graphPath = file.append(graph);
-    }if(file.rfind(".osm.xyz") != true) {
+    }
+    if (file.rfind(".osm.xyz") != true) {
         xyzPath = temp.append(xyz);
     }
-        ifstream xyzFile;
-        xyzFile.open(xyzPath.c_str());
-        if(!xyzFile) {
-            cout << "Error: file could not be opened" << endl;
-            exit(1);
-        }else {
-            cout << "File read successfully" << endl;
-        }
-        while(!xyzFile.eof()) {
-            float x, y, z;
-            xyzFile >> x;
-            xyzFile >> y;
-            xyzFile >> z;
-            coordinates node(x, y, z);
-            coordinatesList.push_back(node);
-        }
-        xyzFile.close();
-        cout << "Finished reading file" << endl;
-
-
-
-    ifstream graphFile;
-    string line;
-    int numberOfNeighbours = 0;
-    int lineNum = 0;
-    graphFile.open(graphPath.c_str());
-    if(!graphFile) {
+    //Read in .xyz file
+    ifstream xyzFile;
+    xyzFile.open(xyzPath.c_str());
+    if (!xyzFile) {
         cout << "Error: file could not be opened" << endl;
         exit(1);
-    }else{
+    } else {
         cout << "File read successfully" << endl;
     }
-    while(!graphFile.eof()) {
-        while(getline(graphFile,line)) {
-            std::string::size_type n = line.find('%');
-            if (n != std::string::npos) {
+    while (!xyzFile.eof()) {
+        float x, y, z;
+        xyzFile >> x;
+        xyzFile >> y;
+        xyzFile >> z;
+        auto *coordinate = new coordinates(x, y, z);
+        coordinatesList.push_back(coordinate);
+    }
+    xyzFile.close();
+    cout << "Finished reading file" << endl;
+
+    //Read in .graph file
+    ifstream graphFile;
+    string line;
+    int lineNum = 0;
+    graphFile.open(graphPath.c_str());
+    if (!graphFile) {
+        cout << "Error: file could not be opened" << endl;
+        exit(1);
+    } else {
+        cout << "File read successfully" << endl;
+    }
+    while (!graphFile.eof()) {
+        while (getline(graphFile, line)) {
+            std::string::size_type t = line.find('%');
+            if (t != std::string::npos) {
                 continue;
             }
             istringstream num(line);
-            for(int i = 0; line[i] != '\0'; i++) {
-                if(line[i] == ' ') {
-                    numberOfNeighbours++;
-                }
+            if (lineNum == 0) {
+                num >> n;                   //Record number of vertices and edges
+                num >> m;
+                lineNum++;
+            } else if (line.empty() && lineNum != n) {
+                    Node *node;
+                    node = new Node(0, 0);          //Record nodes with zero neighbours
+                    neighbours neighbours1;
+                    neighbours1.push_back(node);
+                    collection.push_back(neighbours1);
+                    lineNum++;
+                } else {
+                    neighbours neighbours1;             //Create List of neighbours for line number
+                    while (!num.eof() && lineNum != n) {
+                        int neighbour;
+                        num >> neighbour;
+                        Node *node;
+                        node = new Node(neighbour, node->getDistance(coordinatesList, lineNum, neighbour));
+                        neighbours1.push_back(node);                    //Add neighbours to list
+                    }
+                    collection.push_back(neighbours1);                  //Add List to vector
+                    lineNum++;
             }
-            numberOfNeighbours+=1;
-            for(int i = 0; i < numberOfNeighbours; i++) {
-                int temp;
-                num >> temp;
-                //Node node(lineNum, temp);
-                neighbours neighbours1;
-                neighbours1.push_back(Node(lineNum, temp));
-                collection.push_back(neighbours1);
-                //Node inverse(temp, lineNum);
-                //neighbours.push_back(inverse);
-            }
-            lineNum++;
-            numberOfNeighbours = 0;
         }
     }
+    graphFile.close();
     cout << "Finished reading file" << endl;
+
+    int query;
+    cin >> query;
+    switch (query) {
+        case 1:
+            cout << "n= " << n << " m= " << m << endl;
+            break;
+        case 2:;
+    }
 }
