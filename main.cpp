@@ -5,6 +5,8 @@
 #include <sstream>
 #include <list>
 #include <cmath>
+#include <iomanip>
+#include <algorithm>
 
 using namespace std;
 
@@ -17,6 +19,17 @@ public:
 
     float getY() { return y; }
 
+    float getDistance(vector<coordinates *> vec, int parent, int neighbour) {
+        float x1 = vec[parent - 1]->getX();
+        float y1 = vec[parent - 1]->getY();
+        float x2 = vec[neighbour - 1]->getX();
+        float y2 = vec[neighbour - 1]->getY();
+        float distance = sqrt(pow(x2 - x1, 2) +
+                              pow(y2 - y1, 2) * 1.0);
+
+        return distance;
+    }
+
 private:
     float x;
     float y;
@@ -27,11 +40,13 @@ class Node {
     int neighbour;
     float distance;
 public:
+    Node();
+
     Node(int _neighbour, float _distance) : neighbour(_neighbour), distance(_distance) {}
 
     int getNeighbour() { return neighbour; }
 
-    int getDistance(vector<coordinates*> vec, int parent, int neighbour) {
+    float getDistance(vector<coordinates *> vec, int parent, int neighbour) {
         float x1 = vec[parent - 1]->getX();
         float y1 = vec[parent - 1]->getY();
         float x2 = vec[neighbour - 1]->getX();
@@ -54,8 +69,8 @@ int main() {
     int m;
     string xyzPath;
     string graphPath;
-    vector<coordinates*> coordinatesList;
-    typedef list<Node*> neighbours;
+    vector<coordinates *> coordinatesList;
+    typedef list<Node *> neighbours;
     vector<neighbours> collection;
 
     string file;
@@ -108,27 +123,28 @@ int main() {
             }
             istringstream num(line);
             if (lineNum == 0) {
-                num >> n;                   //Record number of vertices and edges
+                num >> n;                                           //Record number of vertices and edges
                 num >> m;
                 lineNum++;
-            } else if (line.empty() && lineNum != n) {
+            } else if (line.empty() && lineNum <= n) {
+                Node *node;
+                node = new Node(0, 0);          //Record nodes with zero neighbours
+                neighbours neighbours1;
+                neighbours1.push_back(node);
+                collection.push_back(neighbours1);
+                lineNum++;
+            } else {
+                neighbours neighbours1;                              //Create List of neighbours for line number
+                while (!num.eof() && lineNum <= n) {
+                    int neighbour;
+                    num >> neighbour;
                     Node *node;
-                    node = new Node(0, 0);          //Record nodes with zero neighbours
-                    neighbours neighbours1;
-                    neighbours1.push_back(node);
-                    collection.push_back(neighbours1);
-                    lineNum++;
-                } else {
-                    neighbours neighbours1;             //Create List of neighbours for line number
-                    while (!num.eof() && lineNum != n) {
-                        int neighbour;
-                        num >> neighbour;
-                        Node *node;
-                        node = new Node(neighbour, node->getDistance(coordinatesList, lineNum, neighbour));
-                        neighbours1.push_back(node);                    //Add neighbours to list
-                    }
-                    collection.push_back(neighbours1);                  //Add List to vector
-                    lineNum++;
+                    coordinates *coordinate = coordinatesList[lineNum - 1];
+                    node = new Node(neighbour, coordinate->getDistance(coordinatesList, lineNum, neighbour));
+                    neighbours1.push_back(node);                    //Add neighbours to list
+                }
+                collection.push_back(neighbours1);                  //Add List to vector
+                lineNum++;
             }
         }
     }
@@ -138,9 +154,71 @@ int main() {
     int query;
     cin >> query;
     switch (query) {
-        case 1:
+        case 1: {
             cout << "n= " << n << " m= " << m << endl;
             break;
-        case 2:;
+        }
+        case 2: {
+            int size = (collection[0].size());
+            int index = 1;
+            for (int i = 0; i < collection.size(); i++) {
+                if (size < collection[i].size()) {
+                    index = i + 1;
+                    size = collection[i].size();
+                }
+            }
+            cout << "v= " << index << " |N(v)|= " << size;
+            break;
+        }
+        case 3: {
+            float totalNeighbours = 0.0;
+            for (auto &i : collection) {
+                totalNeighbours += i.size();
+            }
+            float average = totalNeighbours / collection.size();
+            cout << "avg |N(v)|= " << average << setprecision(6);
+            break;
+        }
+        case 4: {
+            int node;
+            cin >> node;
+            cout << "N(" << node << ")= ";
+            for (const auto &neighbour : collection[node - 1]) {
+                cout << neighbour->getNeighbour() << " ";
+            }
+            break;
+        }
+        case 5: {
+            string nodes;
+            getline(std::cin,nodes);
+            getline(std::cin,nodes);
+            istringstream num(nodes);
+            string userInputNodes;
+            vector<int> vec;
+            int node;
+            while (!(num.eof())) {
+                num >> node;
+                //while(cin >> node){
+                userInputNodes += to_string(node) + ",";
+                //list<Node*>::const_iterator rit;
+                for (const auto &neighbour : collection[node - 1]) {
+                    //for(rit = collection[node-1].begin(); rit != collection[node-1].end(); rit++) {
+                    //Node *node1 = *rit;
+                    vec.push_back(neighbour->getNeighbour());
+                }
+            }
+            sort(vec.begin(), vec.end());
+            for (int i = 0; i < vec.size()-1; i++) {
+                if (vec[i] == vec[i + 1]) {
+                    vec.erase(vec.begin() + i);
+                }
+            }
+            cout << "N(" << userInputNodes << ")= ";
+            for (int neighbour : vec) {
+                cout << neighbour << " ";
+            }
+            break;
+        }
     }
 }
+
