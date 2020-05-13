@@ -63,14 +63,37 @@ private:
 
 };
 
+typedef list<Node *> neighbours;
+vector<coordinates *> coordinatesList;
 
-int main() {
+vector<vector<int>> matPow(vector<vector<int>> mat1, vector<vector<int>> &mat2, int pow) {
+    vector<vector<int>> mult(mat1.size(), vector<int>(mat1.size(), 0));
+    int i = 1;
+    while (i < pow) {
+        for (int r = 0; r < mat1.size(); r++) {
+            for (int c = 0; c < mat1[r].size(); c++) {
+                for (int k = 0; k < mat1[r].size(); k++) {
+                    mult[r][c] += mat1[r][k] * mat2[k][c];
+                }
+            }
+        }
+        mat2 = mult;
+        mult = vector<vector<int>>(mat2.size(), vector<int>(mat2.size(), 0));
+        i++;
+    }
+    /*for (int r = 0; r < mult.size(); r++) {
+        for (int c = 0; c < mult.size(); c++) {
+            std::cout << mat2[r][c] << " ";
+        }
+    }*/
+    return mat2;
+}
+
+int main(int argc, char *argv[]) {
     int n;
     int m;
     string xyzPath;
     string graphPath;
-    vector<coordinates *> coordinatesList;
-    typedef list<Node *> neighbours;
     vector<neighbours> collection;
 
     string file;
@@ -189,34 +212,61 @@ int main() {
             break;
         }
         case 5: {
-            string nodes;
-            getline(std::cin,nodes);
-            getline(std::cin,nodes);
-            istringstream num(nodes);
-            string userInputNodes;
-            vector<int> vec;
-            int node;
-            while (!(num.eof())) {
-                num >> node;
-                //while(cin >> node){
-                userInputNodes += to_string(node) + ",";
-                //list<Node*>::const_iterator rit;
-                for (const auto &neighbour : collection[node - 1]) {
-                    //for(rit = collection[node-1].begin(); rit != collection[node-1].end(); rit++) {
-                    //Node *node1 = *rit;
-                    vec.push_back(neighbour->getNeighbour());
+            int parent;
+            int distance;
+            cin >> parent;
+            cin >> distance;
+            vector<vector<int>> adjMat(n, vector<int>(n, 0));
+            for (int i = 0; i < collection.size() / 2; i++) {
+                for (Node *node : collection[i]) {
+                    int num = node->getNeighbour();
+                    if (num != 0) {
+                        adjMat.at(i).at(num - 1) = 1;
+                        adjMat.at(num - 1).at(i) = 1;
+                    }
                 }
             }
-            sort(vec.begin(), vec.end());
-            for (int i = 0; i < vec.size()-1; i++) {
-                if (vec[i] == vec[i + 1]) {
-                    vec.erase(vec.begin() + i);
+            for (auto &row : adjMat) {
+                for (int &col : row) {
+                    std::cout << col << ' ';
                 }
             }
-            cout << "N(" << userInputNodes << ")= ";
-            for (int neighbour : vec) {
-                cout << neighbour << " ";
+            cout << "N(" << parent << "," << distance << ")=";
+            for(int i = 0; i < matPow(adjMat, adjMat, distance).size(); i++) {
+                if(matPow(adjMat, adjMat, 4).at(parent-1).at(i) != 0) {
+                    cout << i + 1 << " ";
+                }
             }
+
+            /* string nodes;
+             getline(std::cin,nodes);
+             getline(std::cin,nodes);
+             istringstream num(nodes);
+             string userInputNodes;
+             vector<int> vec;
+             int node;
+             while (!(num.eof())) {
+                 num >> node;
+                 //while(cin >> node){
+                 userInputNodes += to_string(node) + ",";
+                 //list<Node*>::const_iterator rit;
+                 for (const auto &neighbour : collection[node - 1]) {
+                     //for(rit = collection[node-1].begin(); rit != collection[node-1].end(); rit++) {
+                     //Node *node1 = *rit;
+                     vec.push_back(neighbour->getNeighbour());
+                 }
+             }
+             sort(vec.begin(), vec.end());
+             for (int i = 0; i < vec.size()-1; i++) {
+                 if (vec[i] == vec[i + 1]) {
+                     vec.erase(vec.begin() + i);
+                 }
+             }
+             cout << "N(" << userInputNodes << ")= ";
+             for (int neighbour : vec) {
+                 cout << neighbour << " ";
+             }
+             break;*/
             break;
         }
     }
