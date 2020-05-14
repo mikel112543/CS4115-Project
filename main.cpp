@@ -182,8 +182,8 @@ int main(int argc, char *argv[]) {
     cin >> query;
     switch (query) {
         case 1: {
-            cout << "n= " << n << " m= " << m << endl;
-            exit(1);
+            cout << "n= " << n << "; " << "m= " << m << "." << endl;
+            exit(0);
         }
         case 2: {
             int size = (collection1[0].size());
@@ -194,8 +194,8 @@ int main(int argc, char *argv[]) {
                     size = collection1[i].size();
                 }
             }
-            cout << "v= " << index << " |N(v)|= " << size;
-            exit(1);
+            cout << "v= " << index << "; " << "|N(v)|= " << size << ".";
+            exit(0);
         }
         case 3: {
             float totalNeighbours = 0.0;
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
                 totalNeighbours += i.size();
             }
             float average = totalNeighbours / collection1.size();
-            cout << "avg |N(v)|= " << fixed << average << setprecision(6);
+            cout << "avg |N(v)|= " << fixed << average << setprecision(6) << ".";
             exit(1);
         }
         case 4: {
@@ -213,7 +213,8 @@ int main(int argc, char *argv[]) {
             for (const auto &neighbour : collection1[node - 1]) {
                 cout << neighbour->getNeighbour() << " ";
             }
-            exit(1);
+            cout << ".";
+            exit(0);
         }
         case 5: {
             int parent;
@@ -226,13 +227,14 @@ int main(int argc, char *argv[]) {
             adjMat res;
             createAdjMat(adjMat1, collection1);
             createAdjMat(adjMat2, collection1);
-            cout << "N(" << parent << "," << distance << ")=";
+            cout << "N(" << parent << "," << distance << ")= ";
             matPow(adjMat1, adjMat2, tempMat, res, distance);
             for (int i = 0; i < res.size(); i++) {
                 if (res.at(parent - 1).at(i) != 0) {
                     cout << i + 1 << " ";
                 }
             }
+            cout << ".";
             exit(0);
         }
         case 6: {
