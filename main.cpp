@@ -10,7 +10,7 @@
 
 using namespace std;
 
-class coordinates {
+/*class coordinates {
 public:
 
     coordinates(float x, float y, float z) : x(x), y(y), z(z) {}
@@ -34,14 +34,13 @@ private:
     float x;
     float y;
     float z;
-};
+};*/
 
 class Node {
     int neighbour;
-    float distance;
 public:
 
-    Node(int _neighbour, float _distance) : neighbour(_neighbour), distance(_distance) {}
+    Node(int _neighbour) : neighbour(_neighbour) {}
 
     int getNeighbour() const { return neighbour; }
 
@@ -52,7 +51,7 @@ private:
 typedef vector<int> numVec;
 typedef vector<numVec> adjMat;
 typedef list<Node *> neighbours;
-vector<coordinates *> coordinatesList;
+//vector<coordinates *> coordinatesList;
 typedef vector<neighbours> collection;
 
 void createAdjMat(adjMat &m1, const collection &collection1) {
@@ -112,14 +111,14 @@ int main(int argc, char *argv[]) {
         xyzPath = temp.append(xyz);
     }
     //Read in .xyz file
-    ifstream xyzFile;
+   /* ifstream xyzFile;
     xyzFile.open(xyzPath.c_str());
     if (!xyzFile) {
         cout << "Error: file could not be opened" << endl;
         exit(1);
-    } /*else {
+    } *//*else {
         cout << "File read successfully" << endl;
-    }*/
+    }*//*
     while (!xyzFile.eof()) {
         float x, y, z;
         xyzFile >> x;
@@ -129,7 +128,7 @@ int main(int argc, char *argv[]) {
         coordinatesList.push_back(coordinate);
     }
     xyzFile.close();
-    //cout << "Finished reading file" << endl;
+    //cout << "Finished reading file" << endl;*/
 
     //Read in .graph file
     ifstream graphFile;
@@ -155,7 +154,7 @@ int main(int argc, char *argv[]) {
                 lineNum++;
             } else if (line.empty() && lineNum <= n) {
                 Node *node;
-                node = new Node(0, 0);          //Record nodes with zero neighbours
+                node = new Node(0);          //Record nodes with zero neighbours
                 neighbours neighbours1;
                 neighbours1.push_back(node);
                 collection1.push_back(neighbours1);
@@ -166,8 +165,8 @@ int main(int argc, char *argv[]) {
                     int neighbour;
                     num >> neighbour;
                     Node *node;
-                    coordinates *coordinate = coordinatesList[lineNum - 1];
-                    node = new Node(neighbour, coordinate->getDistance(coordinatesList, lineNum, neighbour));
+                    //coordinates *coordinate = coordinatesList[lineNum - 1];
+                    node = new Node(neighbour);
                     neighbours1.push_back(node);                    //Add neighbours to list
                 }
                 collection1.push_back(neighbours1);                  //Add List to vector
@@ -200,7 +199,13 @@ int main(int argc, char *argv[]) {
         case 3: {
             float totalNeighbours = 0.0;
             for (auto &i : collection1) {
-                totalNeighbours += i.size();
+                for(Node* node : i) {
+                    if(node[0].getNeighbour() != 0) {
+                        totalNeighbours += i.size();
+                    }
+                    break;
+                }
+                //totalNeighbours += i.size();
             }
             float average = totalNeighbours / collection1.size();
             cout << "avg |N(v)|= " << fixed << average << setprecision(6) << ".";
