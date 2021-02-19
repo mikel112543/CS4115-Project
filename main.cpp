@@ -4,37 +4,10 @@
 #include <string>
 #include <sstream>
 #include <list>
-#include <cmath>
 #include <iomanip>
 #include <algorithm>
 
 using namespace std;
-
-/*class coordinates {
-public:
-
-    coordinates(float x, float y, float z) : x(x), y(y), z(z) {}
-
-    float getX() { return x; }
-
-    float getY() { return y; }
-
-    float getDistance(vector<coordinates *> vec, int parent, int neighbour) {
-        float x1 = vec[parent - 1]->getX();
-        float y1 = vec[parent - 1]->getY();
-        float x2 = vec[neighbour - 1]->getX();
-        float y2 = vec[neighbour - 1]->getY();
-        float distance = sqrt(pow(x2 - x1, 2) +
-                              pow(y2 - y1, 2) * 1.0);
-
-        return distance;
-    }
-
-private:
-    float x;
-    float y;
-    float z;
-};*/
 
 class Node {
     int neighbour;
@@ -51,7 +24,6 @@ private:
 typedef vector<int> numVec;
 typedef vector<numVec> adjMat;
 typedef list<Node *> neighbours;
-//vector<coordinates *> coordinatesList;
 typedef vector<neighbours> collection;
 
 void createAdjMat(adjMat &m1, const collection &collection1) {
@@ -92,6 +64,7 @@ void matPow(const adjMat m1, adjMat &m2, adjMat &temp, adjMat &mult, int pow) {
     }
 }
 
+
 int main(int argc, char *argv[]) {
     int n;
     int m;
@@ -110,25 +83,6 @@ int main(int argc, char *argv[]) {
     if (file.rfind(".osm.xyz") != true) {
         xyzPath = temp.append(xyz);
     }
-    //Read in .xyz file
-   /* ifstream xyzFile;
-    xyzFile.open(xyzPath.c_str());
-    if (!xyzFile) {
-        cout << "Error: file could not be opened" << endl;
-        exit(1);
-    } *//*else {
-        cout << "File read successfully" << endl;
-    }*//*
-    while (!xyzFile.eof()) {
-        float x, y, z;
-        xyzFile >> x;
-        xyzFile >> y;
-        xyzFile >> z;
-        auto *coordinate = new coordinates(x, y, z);
-        coordinatesList.push_back(coordinate);
-    }
-    xyzFile.close();
-    //cout << "Finished reading file" << endl;*/
 
     //Read in .graph file
     ifstream graphFile;
@@ -138,9 +92,7 @@ int main(int argc, char *argv[]) {
     if (!graphFile) {
         cout << "Error: file could not be opened" << endl;
         exit(1);
-    } /*else {
-        cout << "File read successfully" << endl;
-    }*/
+    }
     while (!graphFile.eof()) {
         while (getline(graphFile, line)) {
             std::string::size_type t = line.find('%');
@@ -181,13 +133,13 @@ int main(int argc, char *argv[]) {
     cin >> query;
     switch (query) {
         case 1: {
-            cout << "n= " << n << "; " << "m= " << m << "." << endl;
+            cout << "n= " << n << "; " << "m= " << m << "." << endl;        //Print n= number of nodes & m= number of edges
             exit(0);
         }
         case 2: {
             int size = (collection1[0].size());
             int index = 1;
-            for (int i = 0; i < collection1.size(); i++) {
+            for (int i = 0; i < collection1.size(); i++) {                  //Print node with largest amount of edges / neighbours
                 if (size < collection1[i].size()) {
                     index = i + 1;
                     size = collection1[i].size();
@@ -199,7 +151,7 @@ int main(int argc, char *argv[]) {
         case 3: {
             float totalNeighbours = 0.0;
             for (auto &i : collection1) {
-                for(Node* node : i) {
+                for(Node* node : i) {                                       //Print average number of edges / neighbours
                     if(node[0].getNeighbour() != 0) {
                         totalNeighbours += i.size();
                     }
@@ -215,7 +167,7 @@ int main(int argc, char *argv[]) {
             int node;
             cin >> node;
             cout << "N(" << node << ")= ";
-            for (const auto &neighbour : collection1[node - 1]) {
+            for (const auto &neighbour : collection1[node - 1]) {       //Given node print all neighbours with distance of 1 away
                 cout << neighbour->getNeighbour() << " ";
             }
             cout << ".";
@@ -227,7 +179,7 @@ int main(int argc, char *argv[]) {
             cin >> parent;
             cin >> distance;
             adjMat adjMat1;
-            adjMat adjMat2;
+            adjMat adjMat2;                                             //Given node print all neighbours with distance of K away
             adjMat tempMat;
             adjMat res;
             createAdjMat(adjMat1, collection1);
@@ -245,7 +197,7 @@ int main(int argc, char *argv[]) {
         case 6: {
             int start;
             int finish;
-            cin >> start;
+            cin >> start;                                               //Given two nodes, find shortest distance between these
             cin >> finish;
             cout << "Path: " << start;
             cout << "d(" << start << "," << finish << ")=";
@@ -255,7 +207,7 @@ int main(int argc, char *argv[]) {
         case 7: {
             int start;
             int finish;
-            cin >> start;
+            cin >> start;                                           //Given two nodes, find least amount of edges between these
             cin >> finish;
             cout << "Path: " << start;
             cout << "ed(" << start << "," << finish << ")=";
